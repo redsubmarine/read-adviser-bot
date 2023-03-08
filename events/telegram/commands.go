@@ -87,7 +87,7 @@ func (p *Processor) sendHello(chatID int) error {
 }
 
 func isAddCmd(text string) bool {
-	return strings.HasPrefix(text, "/add")
+	return isURL(text)
 }
 
 func isURL(text string) bool {
