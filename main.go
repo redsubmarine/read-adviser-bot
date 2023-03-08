@@ -2,25 +2,25 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 
 	tgClient "read-adviser-bot/clients/telegram"
+	"read-adviser-bot/config"
 	event_consumer "read-adviser-bot/consumer/event-consumer"
 	"read-adviser-bot/events/telegram"
 	"read-adviser-bot/storage/sqlite"
 )
 
 const (
-	tgBotHost         = "api.telegram.org"
-	storagePath       = "files_storage"
-	sqliteStoragePath = "data/sqlite/storage.db"
-	batchSize         = 100
+	tgBotHost   = "api.telegram.org"
+	storagePath = "files_storage"
+	batchSize   = 100
 )
 
 func main() {
+	cfg := config.MustLoad()
 	// s := files.New(storagePath)
-	s, err := sqlite.New(sqliteStoragePath)
+	s, err := sqlite.New(cfg.DBFilePath)
 	if err != nil {
 		log.Fatal("can't connect to storage: ", err)
 	}
@@ -30,7 +30,7 @@ func main() {
 	}
 
 	eventsProcessor := telegram.New(
-		tgClient.New(tgBotHost, mustToken()),
+		tgClient.New(tgBotHost, cfg.TgBotToken),
 		s,
 	)
 
@@ -41,15 +41,4 @@ func main() {
 	if err := consumer.Start(); err != nil {
 		log.Fatal("service is stopped", err)
 	}
-}
-
-func mustToken() string {
-	token := flag.String("tg-bot-token", "", "Telegram bot token")
-	flag.Parse()
-
-	if *token == "" {
-		log.Fatal("token is required")
-	}
-
-	return *token
 }
